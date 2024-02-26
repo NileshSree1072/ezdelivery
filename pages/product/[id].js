@@ -46,7 +46,7 @@ export default function ProductPage({product}) {
             <p>{product.description}</p>
             <PriceRow>
               <div>
-                <Price>${product.price}</Price>
+                <Price>₹{product.price}</Price>
               </div>
               <div>
                
