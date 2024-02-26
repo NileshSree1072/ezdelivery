@@ -19,7 +19,7 @@ const Title = styled.h1`
   }
 `;
 const Desc = styled.p`
-  color:#aaa;
+  color:#000;
   font-size:.8rem;
 `;
 const ColumnsWrapper = styled.div`
