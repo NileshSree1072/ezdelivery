@@ -1,8 +1,11 @@
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import Center from "@/components/Center";
+import Title from "@/components/Title";
 import {Category} from "@/models/Category";
 import Product from "@/models/Product";
 import ProductBox from "@/components/ProductBox";
+import SectionHeader from "@/components/SectionHeader";
 import styled from "styled-components";
 import Link from "next/link";
 import {RevealWrapper} from "next-reveal";
@@ -10,74 +13,73 @@ import {mongooseConnect} from "@/lib/mongoose";
 import {getServerSession} from "next-auth";
 import {authOptions} from "@/pages/api/auth/[...nextauth]";
 import {WishedProduct} from "@/models/WishedProduct";
+import {primary, primaryDark, primarySoft} from "@/lib/colors";
 
 const CategoryGrid = styled.div`
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 20px;
-  @media screen and (min-width: 768px) {
-    grid-template-columns: 1fr 1fr 1fr 1fr;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+  @media screen and (min-width: 640px) {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 16px;
+  }
+  @media screen and (min-width: 1024px) {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 20px;
+  }
+  & > div{
+    height: 100%;
   }
 `;
 
-const CategoryTitle = styled.div`
-  display:flex;
-  margin-top: 10px;
-  margin-bottom: 0;
-  align-items: center;
-  gap: 10px;
-  h2{
-    margin-bottom: 10px;
-    margin-top: 10px;
-  }
-  a{
-    color:#555;
-    display: inline-block;
-  }
-`;
-const CategoryWrapper = styled.div`
-  margin-bottom: 40px;
-`;
-
-const ShowAllSquare = styled(Link)`
-  background-color: #ddd;
-  height: 160px;
-  border-radius: 10px;
-  align-items:center;
+const ShowAllCard = styled(Link)`
   display: flex;
+  flex-direction: column;
+  align-items: center;
   justify-content: center;
-  color: #555;
+  gap: 6px;
+  height: 100%;
+  min-height: 200px;
+  border: 2px dashed #bbf7d0;
+  border-radius: 14px;
+  background-color: ${primarySoft};
+  color: ${primaryDark};
+  font-weight: 700;
   text-decoration: none;
+  text-align: center;
+  padding: 16px;
+  span{ font-size: 14px; font-weight: 500; color: ${primary}; }
+  &:hover{ border-color: ${primary}; }
 `;
 
 export default function CategoriesPage({mainCategories,categoriesProducts,wishedProducts=[]}) {
   return (
     <>
       <Header />
-      <Center>
-        {mainCategories.map(cat => (
-          <CategoryWrapper key={cat._id}>
-            <CategoryTitle>
-              <h2>{cat.name}</h2>
-              <div>
-                <Link href={'/category/'+cat._id}>Show all</Link>
-              </div>
-            </CategoryTitle>
-            <CategoryGrid>
-              {categoriesProducts[cat._id].map((p,index) => (
-                <RevealWrapper key={index} delay={index*50}>
-                  <ProductBox {...p} wished={wishedProducts.includes(p._id)} />
+      <main>
+        <Center>
+          <Title>Categories</Title>
+          {mainCategories.map(cat => (
+            <section key={cat._id}>
+              <SectionHeader title={cat.name} href={'/category/'+cat._id} linkLabel="Show all →" />
+              <CategoryGrid>
+                {categoriesProducts[cat._id].map((p,index) => (
+                  <RevealWrapper key={p._id} delay={index*50}>
+                    <ProductBox {...p} wished={wishedProducts.includes(p._id)} />
+                  </RevealWrapper>
+                ))}
+                <RevealWrapper delay={categoriesProducts[cat._id].length*50}>
+                  <ShowAllCard href={'/category/'+cat._id}>
+                    See all {cat.name}
+                    <span>Browse the full range →</span>
+                  </ShowAllCard>
                 </RevealWrapper>
-              ))}
-              <RevealWrapper delay={categoriesProducts[cat._id].length*50}>
-                <ShowAllSquare href={'/category/'+cat._id}>
-                  Show all &rarr;
-                </ShowAllSquare>
-              </RevealWrapper>
-            </CategoryGrid>
-          </CategoryWrapper>
-        ))}
-      </Center>
+              </CategoryGrid>
+            </section>
+          ))}
+        </Center>
+      </main>
+      <Footer />
     </>
   );
 }
@@ -98,7 +100,6 @@ export async function getServerSideProps(ctx) {
     allFetchedProductsId.push(...products.map(p => p._id.toString()))
     categoriesProducts[mainCat._id] = products;
   }
-
 
   const session = await getServerSession(ctx.req, ctx.res, authOptions);
   const wishedProducts = session?.user

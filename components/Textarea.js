@@ -1,13 +1,10 @@
 import styled from "styled-components";
+import {fieldStyle} from "@/components/Input";
 
 const StyledArea = styled.textarea`
-  width: 100%;
-  padding: 5px;
-  margin-bottom: 5px;
-  border: 1px solid #ccc;
-  border-radius: 5px;
-  box-sizing:border-box;
-  font-family:inherit;
+  ${fieldStyle}
+  min-height: 100px;
+  resize: vertical;
 `;
 
 export default function Textarea(props) {
