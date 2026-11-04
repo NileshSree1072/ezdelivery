@@ -6,6 +6,14 @@ import {authOptions} from "@/pages/api/auth/[...nextauth]";
 import {Setting} from "@/models/Setting";
 const stripe = require('stripe')(process.env.STRIPE_SK);
 
+// The site's own address, taken from the request so Stripe returns the shopper to the domain
+// they checked out on (localhost in development, the Vercel domain in production).
+function baseUrl(req) {
+  const proto = (req.headers['x-forwarded-proto'] || 'http').split(',')[0].trim();
+  const host = (req.headers['x-forwarded-host'] || req.headers.host).split(',')[0].trim();
+  return `${proto}://${host}`;
+}
+
 export default async function handler(req,res) {
   if (req.method !== 'POST') {
     res.json('should be a POST request');
@@ -55,8 +63,9 @@ export default async function handler(req,res) {
     line_items,
     mode: 'payment',
     customer_email: email,
-    success_url: process.env.PUBLIC_URL + '/cart?success=1',
-    cancel_url: process.env.PUBLIC_URL + '/cart?canceled=1',
+    // Stripe replaces {CHECKOUT_SESSION_ID} so the cart page can confirm the payment.
+    success_url: baseUrl(req) + '/cart?success=1&session_id={CHECKOUT_SESSION_ID}',
+    cancel_url: baseUrl(req) + '/cart?canceled=1',
     metadata: {orderId:orderDoc._id.toString()},
     allow_promotion_codes: true,
     shipping_options: [
