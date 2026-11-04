@@ -2,7 +2,7 @@ import Header from "@/components/Header";
 import styled from "styled-components";
 import Center from "@/components/Center";
 import Button from "@/components/Button";
-import {useContext, useEffect, useState} from "react";
+import {useContext, useEffect, useRef, useState} from "react";
 import {CartContext} from "@/components/CartContext";
 import axios from "axios";
 import Table from "@/components/Table";
@@ -96,6 +96,21 @@ export default function CartPage() {
   const [country,setCountry] = useState('');
   const [isSuccess,setIsSuccess] = useState(false);
   const [shippingFee, setShippingFee] = useState(null);
+  const [isRedirecting, setIsRedirecting] = useState(false);
+  const [checkoutError, setCheckoutError] = useState('');
+  const checkoutInFlight = useRef(false);
+  useEffect(() => {
+    // Coming back from Stripe with the Back button can restore this page from the browser
+    // cache with the button still locked, so unlock it.
+    function onPageShow(event) {
+      if (event.persisted) {
+        checkoutInFlight.current = false;
+        setIsRedirecting(false);
+      }
+    }
+    window.addEventListener('pageshow', onPageShow);
+    return () => window.removeEventListener('pageshow', onPageShow);
+  }, []);
   useEffect(() => {
     if (cartProducts.length > 0) {
       axios.post('/api/cart', {ids:cartProducts})
@@ -144,6 +159,13 @@ export default function CartPage() {
     removeProduct(id);
   }
   async function goToPayment() {
+    // Each call creates an order and a Stripe session, so ignore clicks while one is in flight.
+    if (checkoutInFlight.current) {
+      return;
+    }
+    checkoutInFlight.current = true;
+    setIsRedirecting(true);
+    setCheckoutError('');
     try {
       const response = await axios.post('/api/checkout', {
         name,
@@ -157,10 +179,14 @@ export default function CartPage() {
 
       if (response.data.url) {
         window.location = response.data.url;
+        return;   // keep the button locked while the browser leaves for Stripe
       }
+      throw new Error('No payment URL returned');
     } catch (error) {
       console.error("Error:", error);
-      // Handle error gracefully (e.g., display error message to the user)
+      setCheckoutError('Could not start the payment. Please try again.');
+      checkoutInFlight.current = false;
+      setIsRedirecting(false);
     }
   }
   let productsTotal = 0;
@@ -281,9 +307,13 @@ export default function CartPage() {
                        name="country"
                        onChange={ev => setCountry(ev.target.value)}/>
                 <Button black block
+                        disabled={isRedirecting}
                         onClick={goToPayment}>
-                  Continue to payment
+                  {isRedirecting ? 'Redirecting to payment…' : 'Continue to payment'}
                 </Button>
+                {checkoutError && (
+                  <p role="alert" style={{color: '#b91c1c', marginTop: '8px'}}>{checkoutError}</p>
+                )}
               </Box>
             </RevealWrapper>
           )}

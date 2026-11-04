@@ -16,6 +16,10 @@ export const ButtonStyle = css`
     height: 16px;
     margin-right: 5px;
   }
+  &:disabled{
+    opacity: .6;
+    cursor: not-allowed;
+  }
   ${props => props.block && css`
     display: block;
     width: 100%;
