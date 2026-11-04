@@ -1,63 +1,78 @@
 import styled, {css} from "styled-components";
-import {primary} from "@/lib/colors";
+import {ink, primary, primaryDark, primarySoft} from "@/lib/colors";
 
 export const ButtonStyle = css`
-  border:0;
-  padding: 5px 15px;
-  border-radius: 5px;
+  border: 1px solid transparent;
+  padding: 10px 18px;
+  border-radius: 10px;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
+  gap: 8px;
   text-decoration: none;
-  font-family: 'Poppins', sans-serif;
-  font-weight:500;
-  font-size:15px;
+  font-family: inherit;
+  font-weight: 600;
+  font-size: 15px;
+  line-height: 1.2;
+  transition: background-color .15s, border-color .15s, color .15s, transform .05s;
   svg{
-    height: 16px;
-    margin-right: 5px;
+    height: 18px;
+  }
+  &:active:not(:disabled){
+    transform: translateY(1px);
   }
   &:disabled{
     opacity: .6;
     cursor: not-allowed;
   }
   ${props => props.block && css`
-    display: block;
+    display: flex;
     width: 100%;
   `}
   ${props => props.white && !props.outline && css`
     background-color: #fff;
-    color: #000;
+    color: ${ink};
+    &:hover{ background-color: #f1f5f9; }
   `}
   ${props => props.white && props.outline && css`
     background-color: transparent;
     color: #fff;
-    border: 1px solid #fff;
+    border-color: rgba(255,255,255,.7);
+    &:hover{ background-color: rgba(255,255,255,.12); }
   `}
   ${props => props.black && !props.outline && css`
-    background-color: #000;
+    background-color: ${ink};
     color: #fff;
+    &:hover{ background-color: #1e293b; }
   `}
   ${props => props.black && props.outline && css`
     background-color: transparent;
-    color: #000;
-    border: 1px solid #000;
+    color: ${ink};
+    border-color: ${ink};
+    &:hover{ background-color: #f1f5f9; }
   `}
   ${props => props.primary && !props.outline && css`
     background-color: ${primary};
-    border: 1px solid ${primary};
-    color:#fff;
+    color: #fff;
+    &:hover:not(:disabled){ background-color: ${primaryDark}; }
   `}
   ${props => props.primary && props.outline && css`
-    background-color: transparent;
-    border: 1px solid ${primary};
-    color:${primary};
+    background-color: #fff;
+    border-color: ${primary};
+    color: ${primary};
+    &:hover:not(:disabled){ background-color: ${primarySoft}; }
   `}
   ${props => props.size === 'l' && css`
-    font-size:1.2rem;
-    padding: 10px 20px;
+    font-size: 1.05rem;
+    padding: 14px 24px;
     svg{
       height: 20px;
     }
+  `}
+  ${props => props.size === 's' && css`
+    font-size: 14px;
+    padding: 7px 12px;
   `}
 `;
 

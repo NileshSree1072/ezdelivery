@@ -5,18 +5,36 @@ import {mongooseConnect} from "@/lib/mongoose";
 import Product from "@/models/Product";
 import ProductsGrid from "@/components/ProductsGrid";
 import Title from "@/components/Title";
+import Footer from "@/components/Footer";
 import {getServerSession} from "next-auth";
 import {authOptions} from "@/pages/api/auth/[...nextauth]";
 import {WishedProduct} from "@/models/WishedProduct";
+import {muted} from "@/lib/colors";
+
+const PageHeading = styled.div`
+  display: flex;
+  align-items: baseline;
+  gap: 12px;
+  span{
+    color: ${muted};
+    font-size: 15px;
+  }
+`;
 
 export default function ProductsPage({products,wishedProducts}) {
   return (
     <>
       <Header />
-      <Center>
-        <Title>All products</Title>
-        <ProductsGrid products={products} wishedProducts={wishedProducts} />
-      </Center>
+      <main>
+        <Center>
+          <PageHeading>
+            <Title>All products</Title>
+            <span>{products.length} items</span>
+          </PageHeading>
+          <ProductsGrid products={products} wishedProducts={wishedProducts} />
+        </Center>
+      </main>
+      <Footer />
     </>
   );
 }

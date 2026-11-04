@@ -1,4 +1,5 @@
 import Header from "@/components/Header";
+import Footer from "@/components/Footer";
 import Title from "@/components/Title";
 import Center from "@/components/Center";
 import {signIn, signOut, useSession} from "next-auth/react";
@@ -13,26 +14,72 @@ import Spinner from "@/components/Spinner";
 import ProductBox from "@/components/ProductBox";
 import Tabs from "@/components/Tabs";
 import SingleOrder from "@/components/SingleOrder";
+import {UserIcon} from "@/components/icons/StoreIcons";
+import {muted, primary, primarySoft} from "@/lib/colors";
 
 const ColsWrapper = styled.div`
-  display:grid;
-  grid-template-columns: 1.2fr .8fr;
-  gap: 40px;
-  margin: 40px 0;
-  p{
-    margin:5px;
+  display: grid;
+  grid-template-columns: 1fr;
+  gap: 24px;
+  margin-bottom: 40px;
+  @media screen and (min-width: 900px) {
+    grid-template-columns: 1.4fr 1fr;
+    align-items: start;
+  }
+  h2{
+    margin: 0 0 16px;
+    font-size: 1.2rem;
   }
 `;
 
-const CityHolder = styled.div`
-  display:flex;
-  gap: 5px;
+const FieldRow = styled.div`
+  display: flex;
+  gap: 10px;
 `;
 
 const WishedProductsGrid = styled.div`
   display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 40px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 12px;
+`;
+
+const Muted = styled.p`
+  color: ${muted};
+  margin: 0;
+`;
+
+const SignIn = styled.div`
+  text-align: center;
+  padding: 8px 0;
+  span.avatar{
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 56px;
+    height: 56px;
+    border-radius: 999px;
+    background-color: ${primarySoft};
+    color: ${primary};
+    svg{ width: 28px; height: 28px; }
+  }
+  p{
+    color: ${muted};
+    margin: 12px 0 20px;
+  }
+`;
+
+const Profile = styled.div`
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+  img{
+    width: 44px;
+    height: 44px;
+    border-radius: 999px;
+  }
+  strong{ display: block; }
+  span{ color: ${muted}; font-size: 14px; }
 `;
 
 export default function AccountPage() {
@@ -49,6 +96,7 @@ export default function AccountPage() {
   const [wishedProducts,setWishedProducts] = useState([]);
   const [activeTab, setActiveTab] = useState('Orders');
   const [orders, setOrders] = useState([]);
+  const [saved, setSaved] = useState(false);
 
   async function logout() {
     await signOut({
@@ -60,7 +108,10 @@ export default function AccountPage() {
   }
   function saveAddress() {
     const data = {name,email,city,streetAddress,postalCode,country};
-    axios.put('/api/address', data);
+    axios.put('/api/address', data).then(() => {
+      setSaved(true);
+      setTimeout(() => setSaved(false), 2500);
+    });
   }
   useEffect(() => {
     if (!session) {
@@ -95,9 +146,10 @@ export default function AccountPage() {
   return (
     <>
       <Header />
-      <Center>
-        <ColsWrapper>
-          <div>
+      <main>
+        <Center>
+          <Title>My account</Title>
+          <ColsWrapper>
             <RevealWrapper delay={0}>
               <WhiteBox>
                 <Tabs
@@ -113,7 +165,7 @@ export default function AccountPage() {
                     {orderLoaded && (
                       <div>
                         {orders.length === 0 && (
-                          <p>Login to see your orders</p>
+                          <Muted>{session ? 'You have no orders yet.' : 'Sign in to see your orders.'}</Muted>
                         )}
                         {orders.length > 0 && orders.map(o => (
                           <SingleOrder key={o._id} {...o} />
@@ -135,14 +187,9 @@ export default function AccountPage() {
                           ))}
                         </WishedProductsGrid>
                         {wishedProducts.length === 0 && (
-                          <>
-                            {session && (
-                              <p>Your wishlist is empty</p>
-                            )}
-                            {!session && (
-                              <p>Login to add products to your wishlist</p>
-                            )}
-                          </>
+                          <Muted>
+                            {session ? 'Your wishlist is empty. Tap the heart on any product to save it.' : 'Sign in to add products to your wishlist.'}
+                          </Muted>
                         )}
                       </>
                     )}
@@ -150,66 +197,84 @@ export default function AccountPage() {
                 )}
               </WhiteBox>
             </RevealWrapper>
-          </div>
-          <div>
             <RevealWrapper delay={100}>
               <WhiteBox>
-                <h2>{session ? 'Account details' : 'Login'}</h2>
-                {!addressLoaded && (
-                  <Spinner fullWidth={true} />
-                )}
-                {addressLoaded && session && (
-                  <>
-                    <Input type="text"
-                           placeholder="Name"
-                           value={name}
-                           name="name"
-                           onChange={ev => setName(ev.target.value)} />
-                    <Input type="text"
-                           placeholder="Email"
-                           value={email}
-                           name="email"
-                           onChange={ev => setEmail(ev.target.value)}/>
-                    <CityHolder>
-                      <Input type="text"
-                             placeholder="City"
-                             value={city}
-                             name="city"
-                             onChange={ev => setCity(ev.target.value)}/>
-                      <Input type="text"
-                             placeholder="Postal Code"
-                             value={postalCode}
-                             name="postalCode"
-                             onChange={ev => setPostalCode(ev.target.value)}/>
-                    </CityHolder>
-                    <Input type="text"
-                           placeholder="Street Address"
-                           value={streetAddress}
-                           name="streetAddress"
-                           onChange={ev => setStreetAddress(ev.target.value)}/>
-                    <Input type="text"
-                           placeholder="Country"
-                           value={country}
-                           name="country"
-                           onChange={ev => setCountry(ev.target.value)}/>
-                    <Button black block
-                            onClick={saveAddress}>
-                      Save
-                    </Button>
-                    <hr/>
-                  </>
+                {!session && (
+                  <SignIn>
+                    <span className="avatar"><UserIcon /></span>
+                    <h2>Sign in to EzDelivery</h2>
+                    <p>Track your orders, save addresses and keep a wishlist.</p>
+                    <Button primary block size="l" onClick={login}>Continue with Google</Button>
+                  </SignIn>
                 )}
                 {session && (
-                  <Button primary onClick={logout}>Logout</Button>
-                )}
-                {!session && (
-                  <Button primary onClick={login}>Login with Google</Button>
+                  <>
+                    <Profile>
+                      {session.user?.image && <img src={session.user.image} alt=""/>}
+                      <div>
+                        <strong>{session.user?.name}</strong>
+                        <span>{session.user?.email}</span>
+                      </div>
+                    </Profile>
+                    <h2>Delivery address</h2>
+                    {!addressLoaded && (
+                      <Spinner fullWidth={true} />
+                    )}
+                    {addressLoaded && (
+                      <>
+                        <Input type="text"
+                               placeholder="Full name"
+                               aria-label="Full name"
+                               value={name}
+                               name="name"
+                               onChange={ev => setName(ev.target.value)} />
+                        <Input type="email"
+                               placeholder="Email"
+                               aria-label="Email"
+                               value={email}
+                               name="email"
+                               onChange={ev => setEmail(ev.target.value)}/>
+                        <Input type="text"
+                               placeholder="Street address"
+                               aria-label="Street address"
+                               value={streetAddress}
+                               name="streetAddress"
+                               onChange={ev => setStreetAddress(ev.target.value)}/>
+                        <FieldRow>
+                          <Input type="text"
+                                 placeholder="City"
+                                 aria-label="City"
+                                 value={city}
+                                 name="city"
+                                 onChange={ev => setCity(ev.target.value)}/>
+                          <Input type="text"
+                                 placeholder="Postal code"
+                                 aria-label="Postal code"
+                                 value={postalCode}
+                                 name="postalCode"
+                                 onChange={ev => setPostalCode(ev.target.value)}/>
+                        </FieldRow>
+                        <Input type="text"
+                               placeholder="Country"
+                               aria-label="Country"
+                               value={country}
+                               name="country"
+                               onChange={ev => setCountry(ev.target.value)}/>
+                        <Button primary block onClick={saveAddress}>
+                          {saved ? 'Saved ✓' : 'Save address'}
+                        </Button>
+                      </>
+                    )}
+                    <hr/>
+                    <Button black outline block onClick={logout}>Log out</Button>
+                  </>
                 )}
               </WhiteBox>
             </RevealWrapper>
-          </div>
-        </ColsWrapper>
-      </Center>
+          </ColsWrapper>
+        </Center>
+      </main>
+      <Footer />
     </>
   );
 }

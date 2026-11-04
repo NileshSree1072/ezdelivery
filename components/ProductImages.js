@@ -1,53 +1,66 @@
 import styled from "styled-components";
 import {useState} from "react";
+import {border, primary} from "@/lib/colors";
 
-const Image = styled.img`
-    max-width: 100%;
-    max-height: 100%;
-  `;
+const BigImageWrapper = styled.div`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 300px;
+  @media screen and (min-width: 768px) {
+    height: 400px;
+  }
+`;
 const BigImage = styled.img`
   max-width: 100%;
-  max-height: 400px;
+  max-height: 100%;
+  object-fit: contain;
 `;
 const ImageButtons = styled.div`
-    display: flex;
-    gap: 10px;
-    flex-grow: 0;
-    margin-top: 10px;
-  `;
-const ImageButton = styled.div`
-    border: 2px solid #ccc;
-    ${props => props.active ? `
-      border-color: #ccc;
-    ` : `
-      border-color: transparent;
-    `}
-    height: 40px;
-    padding: 2px;
-    cursor: pointer;
-    border-radius: 5px;
-  `;
-const BigImageWrapper = styled.div`
-  text-align: center;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  margin-top: 16px;
+`;
+const ImageButton = styled.button`
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 64px;
+  height: 64px;
+  padding: 6px;
+  background-color: #fff;
+  border: 2px solid ${props => props.$active ? primary : border};
+  border-radius: 10px;
+  cursor: pointer;
+  img{
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain;
+  }
 `;
 
-export default function ProductImages({images}) {
+export default function ProductImages({images = [], title = ''}) {
   const [activeImage,setActiveImage] = useState(images?.[0]);
   return (
     <>
       <BigImageWrapper>
-        <BigImage src={activeImage} />
+        <BigImage src={activeImage} alt={title} />
       </BigImageWrapper>
-      <ImageButtons>
-        {images.map(image => (
-          <ImageButton
-            key={image}
-            active={image===activeImage}
-            onClick={() => setActiveImage(image)}>
-            <Image src={image} alt=""/>
-          </ImageButton>
-        ))}
-      </ImageButtons>
+      {images.length > 1 && (
+        <ImageButtons>
+          {images.map((image, index) => (
+            <ImageButton
+              key={image}
+              type="button"
+              aria-label={`Show image ${index + 1}`}
+              $active={image===activeImage}
+              onClick={() => setActiveImage(image)}>
+              <img src={image} alt=""/>
+            </ImageButton>
+          ))}
+        </ImageButtons>
+      )}
     </>
   );
 }

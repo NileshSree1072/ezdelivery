@@ -1,19 +1,48 @@
 import {createGlobalStyle} from "styled-components";
 import {CartContextProvider} from "@/components/CartContext";
 import {SessionProvider} from "next-auth/react";
+import {background, ink, primary} from "@/lib/colors";
 
 const GlobalStyles = createGlobalStyle`
-  @import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
+  *, *::before, *::after{
+    box-sizing: border-box;
+  }
   body{
-    background-color: #eee;
+    background-color: ${background};
+    color: ${ink};
     padding:0;
     margin:0;
-    font-family: 'Poppins', sans-serif;
+    font-family: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+    -webkit-font-smoothing: antialiased;
+    line-height: 1.5;
+  }
+  a{
+    color: ${primary};
+  }
+  img{
+    max-width: 100%;
+  }
+  /* Keep the footer at the bottom of the window on short pages. */
+  #__next{
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+  }
+  #__next > main{
+    flex: 1;
   }
   hr{
     display: block;
     border:0;
-    border-top:1px solid #ccc;
+    border-top:1px solid #e5e7eb;
+    margin: 20px 0;
+  }
+  button, input, select, textarea{
+    font-family: inherit;
+  }
+  :focus-visible{
+    outline: 2px solid ${primary};
+    outline-offset: 2px;
   }
 `;
 

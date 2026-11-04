@@ -1,18 +1,12 @@
-import styled from "styled-components";
 import Center from "@/components/Center";
 import ProductsGrid from "@/components/ProductsGrid";
-
-const Title = styled.h2`
-  font-size: 2rem;
-  margin:30px 0 20px;
-  font-weight: normal;
-`;
+import SectionHeader from "@/components/SectionHeader";
 
 export default function NewProducts({products,wishedProducts})
 {
   return (
     <Center>
-      <Title>New Arrivals</Title>
+      <SectionHeader title="New arrivals" href="/products" />
       <ProductsGrid products={products} wishedProducts={wishedProducts}/>
     </Center>
   );
