@@ -52,7 +52,7 @@ export default function AccountPage() {
 
   async function logout() {
     await signOut({
-      callbackUrl: process.env.NEXT_PUBLIC_URL,
+      callbackUrl: '/',
     });
   }
   async function login() {

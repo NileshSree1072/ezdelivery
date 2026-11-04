@@ -1,12 +1,11 @@
-import {mongooseConnect} from "@/lib/mongoose";
+import {markOrderPaidFromSession} from "@/lib/payments";
 const stripe = require('stripe')(process.env.STRIPE_SK);
 import {buffer} from 'micro';
-import {Order} from "@/models/Order";
 
-const endpointSecret = "whsec_b80723bf08d000b31d842b32aff4826d956bd5601b50595728b1e35122f0db6c";
+// Signing secret of the webhook endpoint (Stripe Dashboard > Developers > Webhooks).
+const endpointSecret = process.env.STRIPE_WEBHOOK_SECRET;
 
 export default async function handler(req,res) {
-  await mongooseConnect();
   const sig = req.headers['stripe-signature'];
 
   let event;
@@ -21,14 +20,7 @@ export default async function handler(req,res) {
   // Handle the event
   switch (event.type) {
     case 'checkout.session.completed':
-      const data = event.data.object;
-      const orderId = data.metadata.orderId;
-      const paid = data.payment_status === 'paid';
-      if (orderId && paid) {
-        await Order.findByIdAndUpdate(orderId,{
-          paid:true,
-        })
-      }
+      await markOrderPaidFromSession(event.data.object);
       break;
     default:
       console.log(`Unhandled event type ${event.type}`);
@@ -40,9 +32,3 @@ export default async function handler(req,res) {
 export const config = {
   api: {bodyParser:false,}
 };
-
-// bright-thrift-cajole-lean
-// acct_1Lj5ADIUXXMmgk2a
-
-//cohere-gentle-soothe-luck
-//acct_1Od3lJSGJO4342lI

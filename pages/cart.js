@@ -113,6 +113,12 @@ export default function CartPage() {
     if (window?.location.href.includes('success')) {
       setIsSuccess(true);
       clearCart();
+      const sessionId = new URLSearchParams(window.location.search).get('session_id');
+      if (sessionId) {
+        axios.post('/api/confirm-payment', {sessionId}).catch(() => {
+          // The Stripe webhook, if configured, will still mark the order as paid.
+        });
+      }
     }
     axios.get('/api/settings?name=shippingFee').then(res => {
       setShippingFee(res.data.value);
